@@ -1,3 +1,8 @@
 node_modules/
 package-lock.json
 config/
+
+ico.db
+
+# temp VIM files
+*.swp
