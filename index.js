@@ -26,12 +26,14 @@ app.get("/", (req, res) => {
         [
             icoContract.methods.weiRaised().call(),
             icoContract.methods.startTime().call(),
-            web3.eth.getBlock('latest')
+            web3.eth.getBlock('latest'),
+            icoContract.methods.isActive().call()
         ]
     ).then((values) => {
         stats.weiRaised = Number(values[0]);
         stats.startTime = Number(values[1]);
         stats.currentTime = values[2].timestamp;
+        stats.isActive = values[3];
         res.json(stats);
     }).catch((error) => {
         res.status(500).json({error: error.message});
