@@ -1,3 +1,4 @@
+var Personal = require('web3-eth-personal');
 var Web3 = require('web3');
 var config = require('config');
 var express = require("express");
@@ -9,6 +10,7 @@ var ConectumICO = require('./contracts/ConectumICO.json');
 
 var ethNodeAddress = config.get('eth-node-address');
 var owner = config.get('owner');
+var ownerPassword = config.get('owner-password');
 var icoContractAddress = config.get('ico-contract-address');
 var web3 = new Web3(Web3.givenProvider || ethNodeAddress);
 var icoContract = new web3.eth.Contract(ConectumICO.abi, icoContractAddress);
@@ -43,29 +45,32 @@ app.get("/", (req, res) => {
 app.post("/set_reference", (req, res) => {
     const participant = req.body.participant
     const referrer = req.body.referrer
+    // TODO: check if the participant and referrer are valid Ethereum addresses
     var stmt = db.prepare('INSERT INTO log (method, status, response) VALUES (@method, @status, @response)');
-    icoContract
-        .methods
-        .setReference(participant, referrer)
-        .send({from: owner})
-        .then((receipt) => {
-            stmt.run({
-                method: 'set_reference',
-                status: 200,
-                response: receipt.transactionHash
+    web3.eth.personal.unlockAccount(owner, ownerPassword).then((response) => {
+        icoContract.methods.setReference(participant, referrer).send({from: owner})
+            .then((receipt) => {
+                const txid = receipt.transactionHash;
+                stmt.run({
+                    method: 'set_reference',
+                    status: 200,
+                    response: txid
+                });
+
+                res.json({
+                    txid: txid,
+                    status: parseInt(receipt.status, 16)
+                });
+            }).catch((error) => {
+                console.log(error);
+                stmt.run({
+                    method: 'set_reference',
+                    status: 500,
+                    response: error.message
+                });
+                res.status(500).json({error: JSON.stringify(error)});
             });
-            res.json({
-                transactionHash: receipt.transactionHash
-            });
-        }).catch((error) => {
-            stmt.run({
-                method: 'set_reference',
-                status: 500,
-                response: error.message
-            });
-            
-            res.status(500).json({error: error.message});
-        });
+    }).catch(console.log);
 });
 
 app.use(function (err, req, res, next) {
