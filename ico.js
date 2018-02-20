@@ -32,19 +32,19 @@ function finalize() {
 
 function releaseVestedFor(acc) {
     web3.eth.personal.unlockAccount(owner, ownerPassword).then((response) => {
-        tokenContract.releaseVestedFor(acc).call().then(console.log).catch(console.log);
+        tokenContract.methods.releaseVestedFor(acc).send({from: owner}).then(console.log).catch(console.log);
     }).catch(console.log);
 }
 
 function unclockFor(acc) {
     web3.eth.personal.unlockAccount(owner, ownerPassword).then((response) => {
-        tokenContract.releaseTimelockedFor(acc).call().then(console.log).catch(console.log);
+        tokenContract.methods.releaseTimelockedFor(acc).send({from: owner}).then(console.log).catch(console.log);
     }).catch(console.log);
 }
 
 function incStage() {
     web3.eth.personal.unlockAccount(owner, ownerPassword).then((response) => {
-        tokenContract.incStage().call().then(console.log).catch(console.log);
+        icoContract.methods.incStage().send({from: owner}).then(console.log).catch(console.log);
     }).catch(console.log);
 }
 
@@ -67,7 +67,7 @@ const optionDefinitions = [
     },
     {
         name: 'releaseVestedFor',
-        description: 'Release vested tokens for a user'
+        description: 'Release vested tokens for a user',
         type: String
     },
     {
