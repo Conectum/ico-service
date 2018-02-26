@@ -27,15 +27,20 @@ app.get("/", (req, res) => {
     Promise.all(
         [
             icoContract.methods.weiRaised().call(),
-            icoContract.methods.startTime().call(),
             web3.eth.getBlock('latest'),
-            icoContract.methods.isActive().call()
+            icoContract.methods.isActive().call(),
+            icoContract.methods.stage().call(),
+            icoContract.methods.getStageStart().call(),
+            icoContract.methods.getStageEnd().call()
+
         ]
     ).then((values) => {
         stats.weiRaised = Number(values[0]);
-        stats.startTime = Number(values[1]);
-        stats.currentTime = values[2].timestamp;
-        stats.isActive = values[3];
+        stats.currentTime = values[1].timestamp;
+        stats.isActive = values[2];
+        stats.stage = Number(values[3]);
+        stats.stageStart = Number(values[4]);
+        stats.stageEnd = Number(values[5]);
         res.json(stats);
     }).catch((error) => {
         res.status(500).json({error: error.message});
